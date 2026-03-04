@@ -2,9 +2,82 @@
 
 import { useRef, useState } from "react";
 
+export default function ContactForm() {
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<"idle" | "ok" | "error">("idle");
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setStatus("idle");
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    const payload = {
+      firstName: String(formData.get("firstName") || ""),
+      lastName: String(formData.get("lastName") || ""),
+      email: String(formData.get("email") || ""),
+      message: String(formData.get("message") || ""),
+    };
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Request failed");
+      setStatus("ok");
+      form.reset();
+    } catch {
+      setStatus("error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    // pega aquí tu <form ...> y asegúrate que llame a handleSubmit
+    // (el snippet de arriba)
+    null
+  );
+}
+
 export function Subscription() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<"idle" | "ok" | "error">("idle");
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setStatus("idle");
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const payload = {
+      firstName: String(formData.get("firstName") || ""),
+      lastName: String(formData.get("lastName") || ""),
+      email: String(formData.get("email") || ""),
+      message: String(formData.get("message") || ""),
+    };
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Request failed");
+      setStatus("ok");
+      form.reset();
+    } catch {
+      setStatus("error");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handlePlay = () => {
     videoRef.current?.play();
@@ -43,7 +116,7 @@ export function Subscription() {
             <p className="mb-6 mt-1 text-sm text-neutral-500">
               Value Lab gratuito de 20 minutos.
             </p>
-            <form className="flex flex-col gap-4">
+            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <input
                   type="text"
@@ -74,15 +147,25 @@ export function Subscription() {
                 className="resize-y rounded-lg border border-neutral-300 px-4 py-3 text-neutral-800 placeholder:text-neutral-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 aria-label="Mensaje"
               />
-              <a
-                href="https://wa.me/525551048399"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-block w-full rounded-lg px-6 py-3.5 text-center text-sm font-semibold text-white transition-opacity hover:opacity-95 sm:w-auto"
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-2 inline-block w-full rounded-lg px-6 py-3.5 text-center text-sm font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-60 sm:w-auto"
                 style={{ backgroundColor: "var(--primary)" }}
               >
-                Enviar
-              </a>
+                {loading ? "Enviando..." : "Enviar"}
+              </button>
+
+              {status === "ok" && (
+                <p className="text-sm text-green-700">
+                  ¡Listo! Te contactaremos pronto.
+                </p>
+              )}
+              {status === "error" && (
+                <p className="text-sm text-red-700">
+                  Algo falló. Intenta de nuevo.
+                </p>
+              )}
             </form>
           </div>
         </div>
