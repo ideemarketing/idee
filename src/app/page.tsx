@@ -5,10 +5,14 @@ import { Consultant } from "@/components/Consultant";
 import { Team } from "@/components/Team";
 import { UniversoIdee } from "@/components/UniversoIdee";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { ValueLabCard } from "@/components/ValueLabCard";
+import { getValueLab } from "@/lib/contentful";
 
-export default function Home() {
+export default async function Home() {
+  const lab = await getValueLab();
   return (
     <main>
+      <ValueLabCard lab={lab} />
       <Hero />
       <ScrollReveal>
         <Subscription />
